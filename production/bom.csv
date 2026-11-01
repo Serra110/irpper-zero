@@ -1,0 +1,12 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+A1,RaspberryPi_Pico_Common,1,RaspberryPi_Pico,
+BRD1,128x64OLED,1,SSD1306,
+BZ1,Buzzer_12x9.5RM7.6,1,Buzzer,
+C1,CP_Elec_3x5.3,1,100 nF,
+D1,LED_D3.0mm_IRBlack,1,IR204A,
+J1,microSD_HC_Hirose_DM3AT-SF-PEJM5,1,Micro_SD_Card_Det1,
+Q1,TO-92_Inline,1,2N3904,
+R1,R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal,1,22 omega,
+R2,R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal,1,1K omega,
+"SW1, SW2, SW3, SW4, SW5, SW6, SW7",SW_PUSH_6mm_H5mm,7,SW_Push,
+U1,Vishay_MINICAST-3Pin,1,TSSP58P38,

@@ -149,7 +149,7 @@ void irSpace(uint16_t usec) {
 size_t captureRawIr(uint16_t* out, size_t maxCount, bool* startsLow, uint32_t timeoutMs) {
     uint32_t startMs = millis();
     while (millis() - startMs < timeoutMs && digitalRead(PIN_IR_RX) == HIGH) {
-        // Wait for activity from receiver (most IR receivers idle HIGH).
+       
     }
     if (digitalRead(PIN_IR_RX) == HIGH) {
         return 0;
@@ -501,7 +501,7 @@ void gameDuel() {
 void setup() {
     Serial.begin(115200); // boots debugging
     for (int i = 0; i < 6; i++) {
-        pinMode(buttonPins[i], INPUT_PULLUP); // set buttons as input
+        pinMode(buttonPins[i], INPUT_PULLUP);
     }
     pinMode(PIN_SD_DET, INPUT_PULLUP); // SD CARD DET INPUT
     // ir stuff
