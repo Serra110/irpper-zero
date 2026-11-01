@@ -1,12 +1,5 @@
 Item,Qty,Supplier,Cost/item,Total Cost,link
 PCB,1,JLCPCB,$4.01,$4.01,https://jlcpcb.com/
-display,1,aliexpress,$1.42,$1.42,https://pt.aliexpress.com/item/1005003822805278.html
-miscrosd card reader,1,aliexpress,$1.35,$1.35,https://pt.aliexpress.com/item/1005006247350757.html
-raspberry pi pico,1,aliexpress,$1.92,$1.92,https://pt.aliexpress.com/item/1005005617180169.html
-IR reader,1,aliexpress,$3.07,$3.07,https://pt.aliexpress.com/item/1005006883093944.html
-transistor,1,aliexpress,$0.10,$0.10,https://pt.aliexpress.com/item/1005013129816771.html
-IR led,1,aliexpress,$2.93,$2.93,https://pt.aliexpress.com/item/1005003488156992.html
-buzzer,1,aliexpress,$1.19,$1.19,https://pt.aliexpress.com/item/1005012659618214.html
 resistor,1,aliexpress,$0.40,$0.40,https://pt.aliexpress.com
 capacitor,1,aliexpress,$0.30,$0.30,https://pt.aliexpress.com/item/1005006405918688.html
 Estimated total shipping,1,,,$15.88,
