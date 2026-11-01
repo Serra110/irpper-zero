@@ -1,3 +1,4 @@
 Item,Qty,Supplier,Cost/item,Total Cost,link
 PCB,1,JLCPCB,$4.01,$4.01,https://jlcpcb.com/
+capacitor,1,LCSC,$0.41,$0.41,https://www.lcsc.com/product-detail/C49678.html
 Estimated total shipping,1,,,$15.88,
