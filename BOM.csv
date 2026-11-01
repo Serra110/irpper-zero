@@ -1,3 +1,4 @@
 Item,Qty,Supplier,Cost/item,Total Cost,link
 PCB,1,JLCPCB,$4.01,$4.01,https://jlcpcb.com/
+switches,1,aliexpress,$0.75,$0.75,https://pt.aliexpress.com/item/1005008368302588.html
 Estimated total shipping,1,,,$15.88,
