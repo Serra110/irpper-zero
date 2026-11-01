@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRPER UI Simulator</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #141c31;
+      --oled: #a7f3d0;
+      --oled-glow: #34d399;
+      --ink: #0a0f1b;
+      --text: #dbeafe;
+      --muted: #93a3c2;
+      --accent: #22d3ee;
+      --button: #1f2b4a;
+      --button-hover: #2b3c66;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "IBM Plex Mono", "Fira Code", "Cascadia Code", monospace;
+      background:
+        radial-gradient(1200px 700px at 20% 10%, #1e293b 0%, transparent 55%),
+        radial-gradient(900px 600px at 80% 90%, #0f766e33 0%, transparent 55%),
+        var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    .shell {
+      width: min(980px, 100%);
+      background: linear-gradient(160deg, #15203b, #111a2f);
+      border: 1px solid #243558;
+      border-radius: 18px;
+      box-shadow: 0 22px 70px #0008;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #243558;
+      background: #0e162a;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .screen-wrap {
+      background: var(--panel);
+      border: 1px solid #273a64;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .oled-frame {
+      width: 100%;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 14px;
+      border-radius: 12px;
+      background: #061120;
+      border: 1px solid #1d365f;
+      box-shadow: inset 0 0 20px #000a;
+    }
+
+    canvas {
+      width: 100%;
+      aspect-ratio: 2 / 1;
+      display: block;
+      border-radius: 8px;
+      background: repeating-linear-gradient(
+        180deg,
+        #91f5cc,
+        #91f5cc 2px,
+        #8ceec6 2px,
+        #8ceec6 4px
+      );
+      box-shadow: 0 0 26px #34d39966;
+      image-rendering: pixelated;
+    }
+
+    .controls,
+    .panel {
+      background: var(--panel);
+      border: 1px solid #273a64;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .controls h3,
+    .panel h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: #c8d6f3;
+      letter-spacing: 0.04em;
+    }
+
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    button {
+      border: 1px solid #385489;
+      border-radius: 10px;
+      background: var(--button);
+      color: #e8efff;
+      padding: 10px 8px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+
+    button:hover { background: var(--button-hover); }
+    button:active { transform: translateY(1px); }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .panel {
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .line {
+      margin: 6px 0;
+      color: #b9c8e8;
+    }
+
+    .line strong { color: var(--accent); }
+
+    .status {
+      margin-top: 8px;
+      color: #d6e3ff;
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <span>IRPER UI Simulator</span>
+      <span>Teclas: 1..6 (novo mapeamento)</span>
+    </div>
+
+    <div class="main">
+      <div class="screen-wrap">
+        <div class="oled-frame">
+          <canvas id="oled" width="128" height="64"></canvas>
+        </div>
+      </div>
+
+      <div>
+        <div class="controls">
+          <h3>Botões</h3>
+          <div class="keys">
+            <button data-sw="1">SW1 GPIO6<br>Select</button>
+            <button data-sw="2">SW2 GPIO7<br>Back</button>
+            <button data-sw="3">SW3 GPIO8<br>P1 Up</button>
+            <button data-sw="4">SW4 GPIO9<br>P1 Down</button>
+            <button data-sw="5">SW5 GPIO10<br>P2 Up</button>
+            <button data-sw="6">SW6 GPIO11<br>P2 Down</button>
+          </div>
+          <div class="hint">
+            Menu: SW3/SW4 navega, SW1 seleciona, SW2 volta. Jogos: P1 usa SW3/4 e P2 usa SW5/6.
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Estado</h3>
+          <div class="line"><strong>SD:</strong> mounted (simulado)</div>
+          <div class="line"><strong>Slots IR:</strong> <span id="slots">slot1..slot6 vazios</span></div>
+          <div class="line"><strong>Modo:</strong> <span id="mode">home</span></div>
+          <div class="line"><strong>Seleção:</strong> <span id="selection">Learn IR</span></div>
+          <div class="status" id="status">Pronto.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("oled");
+    const ctx = canvas.getContext("2d");
+    const modeEl = document.getElementById("mode");
+    const statusEl = document.getElementById("status");
+    const slotsEl = document.getElementById("slots");
+    const selectionEl = document.getElementById("selection");
+
+    const menuItems = [
+      "Learn IR",
+      "Send IR",
+      "Game: Pong 2P",
+      "Game: Duel",
+      "SD status"
+    ];
+
+    const state = {
+      mode: "home",
+      phase: "home",
+      menuIndex: 0,
+      irSlots: [false, false, false, false, false, false],
+      slotCursor: 0,
+      timeoutId: null,
+      pong: null,
+      pongLoop: null,
+      duel: null,
+      duelLoop: null
+    };
+
+    function setMode(mode, status = "") {
+      state.mode = mode;
+      modeEl.textContent = mode;
+      statusEl.textContent = status || "Pronto.";
+      selectionEl.textContent = menuItems[state.menuIndex] || "-";
+    }
+
+    function clearTimer() {
+      if (state.timeoutId) {
+        clearTimeout(state.timeoutId);
+        state.timeoutId = null;
+      }
+    }
+
+    function clearLoops() {
+      if (state.pongLoop) {
+        clearInterval(state.pongLoop);
+        state.pongLoop = null;
+      }
+      if (state.duelLoop) {
+        clearInterval(state.duelLoop);
+        state.duelLoop = null;
+      }
+    }
+
+    function drawLines(lines) {
+      ctx.fillStyle = "#9ef2cd";
+      ctx.fillRect(0, 0, 128, 64);
+
+      ctx.fillStyle = "#00120b";
+      ctx.font = "7px 'Courier New', monospace";
+      for (let i = 0; i < lines.length && i < 8; i++) {
+        ctx.fillText(lines[i], 1, 7 + i * 8);
+      }
+    }
+
+    function renderMenu() {
+      drawLines([
+        "IRPER menu",
+        `${state.menuIndex === 0 ? ">" : " "} Learn IR`,
+        `${state.menuIndex === 1 ? ">" : " "} Send IR`,
+        `${state.menuIndex === 2 ? ">" : " "} Game: Pong 2P`,
+        `${state.menuIndex === 3 ? ">" : " "} Game: Duel`,
+        `${state.menuIndex === 4 ? ">" : " "} SD status`,
+        "SW1 OK SW2 Back"
+      ]);
+      state.phase = "home";
+      setMode("home", "Navega com SW3/SW4 e escolhe com SW1.");
+      clearTimer();
+      clearLoops();
+      refreshSlotsText();
+    }
+
+    function refreshSlotsText() {
+      const labels = state.irSlots.map((has, i) => `S${i + 1}:${has ? "ok" : "--"}`);
+      slotsEl.textContent = labels.join("  ");
+    }
+
+    function renderSlotPicker(title, mode, phase) {
+      drawLines([
+        title,
+        "SW3/SW4 change",
+        "SW1 confirm",
+        "SW2 cancel",
+        `Slot: ${state.slotCursor + 1}`
+      ]);
+      state.phase = phase;
+      setMode(mode, "Escolhe o slot.");
+    }
+
+    function learnFlow() {
+      state.slotCursor = 0;
+      renderSlotPicker("Learn IR slot", "learn/select-slot", "learn_select_slot");
+    }
+
+    function sendFlow() {
+      state.slotCursor = 0;
+      renderSlotPicker("Send IR slot", "send/select-slot", "send_select_slot");
+    }
+
+    function startPong() {
+      state.phase = "pong";
+      setMode("game/pong", "SW2 para sair.");
+      state.pong = {
+        p1Y: 24,
+        p2Y: 24,
+        ballX: 64,
+        ballY: 32,
+        vx: 1.8,
+        vy: 1,
+        s1: 0,
+        s2: 0,
+        held: new Set()
+      };
+
+      clearLoops();
+      clearTimer();
+      state.pongLoop = setInterval(() => {
+        const g = state.pong;
+        if (!g || state.phase !== "pong") {
+          return;
+        }
+
+        if (g.held.has(3)) g.p1Y -= 1.5;
+        if (g.held.has(4)) g.p1Y += 1.5;
+        if (g.held.has(5)) g.p2Y -= 1.5;
+        if (g.held.has(6)) g.p2Y += 1.5;
+
+        g.p1Y = Math.max(0, Math.min(48, g.p1Y));
+        g.p2Y = Math.max(0, Math.min(48, g.p2Y));
+
+        g.ballX += g.vx;
+        g.ballY += g.vy;
+
+        if (g.ballY <= 0 || g.ballY >= 63) g.vy *= -1;
+        if (g.ballX <= 4 && g.ballY >= g.p1Y && g.ballY <= g.p1Y + 15) g.vx = Math.abs(g.vx);
+        if (g.ballX >= 123 && g.ballY >= g.p2Y && g.ballY <= g.p2Y + 15) g.vx = -Math.abs(g.vx);
+
+        if (g.ballX < 0) {
+          g.s2 += 1;
+          g.ballX = 64;
+          g.ballY = 32;
+          g.vx = 1.8;
+          g.vy = Math.random() < 0.5 ? 1 : -1;
+        }
+        if (g.ballX > 127) {
+          g.s1 += 1;
+          g.ballX = 64;
+          g.ballY = 32;
+          g.vx = -1.8;
+          g.vy = Math.random() < 0.5 ? 1 : -1;
+        }
+
+        ctx.fillStyle = "#9ef2cd";
+        ctx.fillRect(0, 0, 128, 64);
+        ctx.fillStyle = "#00120b";
+        ctx.font = "7px 'Courier New', monospace";
+        ctx.fillText(`${g.s1}-${g.s2}`, 2, 7);
+        ctx.fillRect(2, g.p1Y, 2, 16);
+        ctx.fillRect(124, g.p2Y, 2, 16);
+        ctx.fillRect(g.ballX, g.ballY, 2, 2);
+
+        if (g.s1 >= 5 || g.s2 >= 5) {
+          clearLoops();
+          shortMessage([g.s1 > g.s2 ? "P1 wins" : "P2 wins", "SW1 ou SW2"], "game/pong/end", "Jogo terminado.", 1200);
+        }
+      }, 33);
+    }
+
+    function startDuel() {
+      state.phase = "duel";
+      setMode("game/duel", "SW2 para sair.");
+      state.duel = { p1Y: 60, p2Y: 60 };
+
+      clearLoops();
+      clearTimer();
+      state.duelLoop = setInterval(() => {
+        const g = state.duel;
+        if (!g || state.phase !== "duel") {
+          return;
+        }
+
+        ctx.fillStyle = "#9ef2cd";
+        ctx.fillRect(0, 0, 128, 64);
+        ctx.fillStyle = "#00120b";
+        ctx.fillRect(0, 0, 128, 1);
+        ctx.fillRect(24, g.p1Y, 8, 3);
+        ctx.fillRect(96, g.p2Y, 8, 3);
+        ctx.font = "7px 'Courier New', monospace";
+        ctx.fillText("P1 SW3/4", 2, 62);
+        ctx.fillText("P2 SW5/6", 72, 62);
+
+        if (g.p1Y <= 0 || g.p2Y <= 0) {
+          clearLoops();
+          if (g.p1Y <= 0 && g.p2Y <= 0) {
+            shortMessage(["Draw", "Both reached top"], "game/duel/end", "Empate.", 1300);
+          } else {
+            shortMessage([g.p1Y <= 0 ? "P1 wins" : "P2 wins", "SW1 ou SW2"], "game/duel/end", "Jogo terminado.", 1300);
+          }
+        }
+      }, 33);
+    }
+
+    function showSdStatus() {
+      drawLines(["SD ready", "IR slots in /ir"]);
+      state.phase = "sd_status";
+      setMode("sd/status", "SD montado (simulado).");
+      state.timeoutId = setTimeout(renderMenu, 1000);
+    }
+
+    function shortMessage(lines, mode, status, ms = 900) {
+      drawLines(lines);
+      setMode(mode, status);
+      clearTimer();
+      clearLoops();
+      state.timeoutId = setTimeout(renderMenu, ms);
+    }
+
+    function onSwitch(sw) {
+      const idx = sw - 1;
+
+      if (state.phase === "pong") {
+        if (sw === 2) {
+          renderMenu();
+          return;
+        }
+        if (state.pong) {
+          state.pong.held.add(sw);
+          setTimeout(() => {
+            if (state.pong) state.pong.held.delete(sw);
+          }, 120);
+        }
+        return;
+      }
+
+      if (state.phase === "duel") {
+        if (sw === 2) {
+          renderMenu();
+          return;
+        }
+        if (!state.duel) return;
+        if (sw === 3) state.duel.p1Y = Math.max(0, state.duel.p1Y - 3);
+        if (sw === 4) state.duel.p1Y = Math.min(63, state.duel.p1Y + 2);
+        if (sw === 5) state.duel.p2Y = Math.max(0, state.duel.p2Y - 3);
+        if (sw === 6) state.duel.p2Y = Math.min(63, state.duel.p2Y + 2);
+        return;
+      }
+
+      if (state.phase === "learn_select_slot") {
+        if (sw === 3) {
+          state.slotCursor = (state.slotCursor + 5) % 6;
+          renderSlotPicker("Learn IR slot", "learn/select-slot", "learn_select_slot");
+          return;
+        }
+        if (sw === 4) {
+          state.slotCursor = (state.slotCursor + 1) % 6;
+          renderSlotPicker("Learn IR slot", "learn/select-slot", "learn_select_slot");
+          return;
+        }
+        if (sw === 2) {
+          renderMenu();
+          return;
+        }
+        if (sw === 1) {
+          state.irSlots[state.slotCursor] = true;
+          refreshSlotsText();
+          shortMessage(["IR learned", `Saved to slot ${state.slotCursor + 1}`], "learn/save", `Sinal guardado no slot ${state.slotCursor + 1}.`, 1200);
+        }
+        return;
+      }
+
+      if (state.phase === "send_select_slot") {
+        if (sw === 3) {
+          state.slotCursor = (state.slotCursor + 5) % 6;
+          renderSlotPicker("Send IR slot", "send/select-slot", "send_select_slot");
+          return;
+        }
+        if (sw === 4) {
+          state.slotCursor = (state.slotCursor + 1) % 6;
+          renderSlotPicker("Send IR slot", "send/select-slot", "send_select_slot");
+          return;
+        }
+        if (sw === 2) {
+          renderMenu();
+          return;
+        }
+        if (sw === 1) {
+          if (state.irSlots[state.slotCursor]) {
+            shortMessage(["Sending IR...", "Done", "IR signal sent"], "send/done", `Slot ${state.slotCursor + 1} enviado.`, 1200);
+          } else {
+            shortMessage(["Slot empty", "Learn first"], "send/error", `Slot ${state.slotCursor + 1} vazio.`, 1200);
+          }
+        }
+        return;
+      }
+
+      if (state.phase !== "home" && state.phase !== "sd_status") {
+        return;
+      }
+
+      clearTimer();
+
+      if (sw === 3) {
+        state.menuIndex = (state.menuIndex + menuItems.length - 1) % menuItems.length;
+        renderMenu();
+        return;
+      }
+      if (sw === 4) {
+        state.menuIndex = (state.menuIndex + 1) % menuItems.length;
+        renderMenu();
+        return;
+      }
+      if (sw === 2) {
+        shortMessage(["Already at menu", "Use SW1 Select"], "home/back", "Sem submenu ativo.", 700);
+        return;
+      }
+      if (sw === 1) {
+        if (state.menuIndex === 0) learnFlow();
+        if (state.menuIndex === 1) sendFlow();
+        if (state.menuIndex === 2) startPong();
+        if (state.menuIndex === 3) startDuel();
+        if (state.menuIndex === 4) showSdStatus();
+      }
+    }
+
+    document.querySelectorAll("button[data-sw]").forEach((btn) => {
+      btn.addEventListener("click", () => onSwitch(Number(btn.dataset.sw)));
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (/^[1-6]$/.test(e.key)) {
+        onSwitch(Number(e.key));
+      }
+    });
+
+    renderMenu();
+  </script>
+</body>
+</html>
