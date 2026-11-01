@@ -16,7 +16,7 @@
 
 1. [2026-10-28: I started by thinking and searching parts for the project, then I searched the footprints for it and downloaded them, then I started building the schematic while looking the pi pico pin layout so It w](#2026-10-28-i-started-by-thinking-and-searching-parts-for-the)
 2. [2026-10-30: I finished the schematic and assigned the footprints, I had no idea what to use so i went to past projects like starbie and midi to check which footprints I coul use, I also went to google and searche](#2026-10-30-i-finished-the-schematic-and-assigned-the-footpri)
-3. [2026-11-01: I finished the connections , last journal, and then I Went back to work, I started by uploading all the images and text that I wanted to customize my PCB, then I tried testing if i could make the curv](#2026-11-01-i-finished-the-connections-last-journal-and-then-)
+3. [2026-11-01: I finished the connections for the pcb, and then I Went back to work, I started by uploading all the images and text that I wanted to customize my PCB, then I tried testing if i could make the curves](#2026-11-01-i-finished-the-connections-for-the-pcb-and-then-i)
 
 ## Design
 
@@ -67,11 +67,11 @@ I will finish the rest of the connections in the next entry.
 
 ![Screenshot_20261029_200726](https://halflife.hackclub-assets.com/sessions/cZUNd9aER83eZhzV1EsdQoeb1e4f3pZl/c4325e2692fff1baa747f9deaa88fcbfd2f18dc5525ca155a3abea8bcea645c3.png)
 
-### 2026-11-01: I finished the connections , last journal, and then I Went back to work, I started by uploading all the images and text that I wanted to customize my PCB, then I tried testing if i could make the curv
+### 2026-11-01: I finished the connections for the pcb, and then I Went back to work, I started by uploading all the images and text that I wanted to customize my PCB, then I tried testing if i could make the curves
 
 **2.8h**
 
-I finished the connections , last journal, and then I Went back to work, I started by uploading all the images and text that I wanted to customize my PCB, then I tried testing if i could make the curves not pointy because i believe that will hurt for the user but i want able to do it, then I started making the code ( which was not counted in this journal because it was with the hackatime, then while doing it I realized some footprints and symbol files were missing so I fixed them, after it i realized I hadn't put a buzzer so I added it, put the footprint file for it and connected it to the board.
+I finished the connections for the pcb, and then I Went back to work, I started by uploading all the images and text that I wanted to customize my PCB, then I tried testing if i could make the curves not pointy because i believe that will hurt for the user but i want able to do it, then I started making the code ( which was not counted in this journal because it was with the hackatime, then while doing it I realized some footprints and symbol files were missing so I fixed them, after it i realized I hadn't put a buzzer so I added it, put the footprint file for it and connected it to the board.
 
 ![Screenshot_20261031_164022](https://halflife.hackclub-assets.com/sessions/cZUNd9aER83eZhzV1EsdQoeb1e4f3pZl/ce1a89c2c1ccd8a34955b807fe89a96133a3d136679c915447f4855237df66ff.png)
 
