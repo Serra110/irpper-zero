@@ -2,4 +2,5 @@ Item,Qty,Supplier,Cost/item,Total Cost,link
 PCB,1,JLCPCB,$4.01,$4.01,https://jlcpcb.com/
 capacitor,1,LCSC,$0.41,$0.41,https://www.lcsc.com/product-detail/C49678.html
 IR reader,1,LCSC,$0.68,$0.68,https://www.lcsc.com/product-detail/C141632.html
+transistor,1,LCSC,$0.63,$0.63,https://www.lcsc.com/product-detail/C713611.html
 Estimated total shipping,1,,,$15.88,
