@@ -1,4 +1,3 @@
 Item,Qty,Supplier,Cost/item,Total Cost,link
 PCB,1,JLCPCB,$4.01,$4.01,https://jlcpcb.com/
-buzzer,1,aliexpress,$0.99,$0.99,https://pt.aliexpress.com/item/1005006613648485.html
 Estimated total shipping,1,,,$15.88,
