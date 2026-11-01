@@ -52,6 +52,8 @@ Irper-Zero includes two built-in games that can be played directly on the device
 The firmware runs on the Raspberry Pi Pico and manages the display, controls, infrared signal capture, microSD card and games.
 It is also supposed to reads the signals and show on the display the frequency, basically an IR signal viewer
 <img width="742" height="414" alt="image" src="https://github.com/user-attachments/assets/2089a636-05ed-411f-af97-79f70fb77980" />
+## AI usage
+AI was used to generate some code including the UI since I do not know how to do it myself, I defined everything and woke every pin up myself.
 
 ## About the Project
 The project is the first one to be focused entirely on frequencies, not counting the game, IR signals and the display. This was the first "alone" project to be made since I didn't follow a tutorial, and just took consideration.
