@@ -41,7 +41,8 @@ enum ButtonIndex {
 };
 
 enum MenuItem {
-    MENU_LEARN_IR = 0,
+    MENU_LISTEN_IR = 0,
+    MENU_LEARN_IR,
     MENU_SEND_IR,
     MENU_GAME_PONG,
     MENU_GAME_DUEL,
@@ -72,6 +73,7 @@ void showMessage(const char* line1, const char* line2 = nullptr, const char* lin
 
 void drawHomeScreen() {
     const char* menu[MENU_COUNT] = {
+        "Listen IR",
         "Learn IR",
         "Send IR",
         "Game: Pong 2P",
@@ -116,6 +118,61 @@ int waitForButtonPress(uint32_t timeoutMs) {
         }
     }
     return -1;
+}
+
+uint16_t estimateSignalFrequency(const uint16_t* data, size_t count) {
+    if (count < 2) {
+        return 0;
+    }
+
+    uint32_t sum = 0;
+    uint16_t used = 0;
+    for (size_t i = 0; i < count; i++) {
+        if (data[i] > 10 && data[i] < 20000) {
+            sum += data[i];
+            used++;
+        }
+    }
+
+    if (used == 0) {
+        return 0;
+    }
+
+    uint32_t avg = sum / used;
+    if (avg == 0) {
+        return 0;
+    }
+
+    return static_cast<uint16_t>(1000000UL / avg);
+}
+
+void drawIrWaveform(const uint16_t* data, size_t count, uint16_t freq) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println(F("IR SIGNAL"));
+    display.print(F("freq: "));
+    display.print(freq);
+    display.println(F(" Hz"));
+
+    const uint8_t baseline = 48;
+    for (int x = 0; x < 128; x++) {
+        size_t idx = (x * count) / 128;
+        uint16_t level = data[idx] / 40;
+        if (level > 20) {
+            level = 20;
+        }
+        int y = baseline - level;
+        if (y < 0) {
+            y = 0;
+        }
+        if (y > 47) {
+            y = 47;
+        }
+        display.drawLine(x, baseline, x, y, SSD1306_WHITE);
+    }
+
+    display.drawFastHLine(0, baseline, 128, SSD1306_WHITE);
+    display.display();
 }
 
 bool isButtonPressed(int index) {
@@ -286,6 +343,70 @@ int selectSlotScreen(const char* title) {
         if (btn == BTN_P1_DOWN) {
             slot = (slot + 1) % 6;
         }
+    }
+}
+
+void drawIdleListenScreen() {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println(F("IR listening"));
+    display.println(F("Waiting..."));
+    display.drawFastHLine(0, 48, 128, SSD1306_WHITE);
+    display.display();
+}
+
+void flowListenIrAuto() {
+    drawIdleListenScreen();
+
+    while (true) {
+        int btn = readButtonEdge();
+        if (btn == BTN_BACK) {
+            drawHomeScreen();
+            return;
+        }
+
+        if (digitalRead(PIN_IR_RX) == LOW) {
+            uint32_t start = millis();
+            while ((millis() - start) < 50 && digitalRead(PIN_IR_RX) == LOW) {
+                delay(1);
+            }
+
+            if ((millis() - start) >= 10) {
+                bool startsLow = true;
+                size_t count = captureRawIr(irSamples, IR_MAX_SAMPLES, &startsLow, 200);
+                if (count > 12) {
+                    uint16_t freq = estimateSignalFrequency(irSamples, count);
+                    drawIrWaveform(irSamples, count, freq);
+
+                    while (true) {
+                        int action = readButtonEdge();
+                        if (action == BTN_SELECT) {
+                            int slot = selectSlotScreen("Save signal");
+                            if (slot >= 0 && saveIrSlot(slot, irSamples, count, startsLow)) {
+                                char line[22];
+                                snprintf(line, sizeof(line), "Saved slot %d", slot + 1);
+                                showMessage("IR saved", line);
+                                delay(1200);
+                                drawHomeScreen();
+                                return;
+                            }
+                            showMessage("Save failed", "Try again");
+                            delay(1000);
+                            drawHomeScreen();
+                            return;
+                        }
+                        if (action == BTN_BACK) {
+                            drawHomeScreen();
+                            return;
+                        }
+                        delay(20);
+                    }
+                }
+            }
+        }
+
+        drawIdleListenScreen();
+        delay(20);
     }
 }
 
@@ -566,7 +687,9 @@ void loop() {
     }
 
     if (btn == BTN_SELECT) {
-        if (currentMenu == MENU_LEARN_IR) {
+        if (currentMenu == MENU_LISTEN_IR) {
+            flowListenIrAuto();
+        } else if (currentMenu == MENU_LEARN_IR) {
             flowLearnIr();
         } else if (currentMenu == MENU_SEND_IR) {
             flowSendIr();
